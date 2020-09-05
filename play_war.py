@@ -1,14 +1,13 @@
 import random
-random.seed(420)
 
 # How many cards per suit? Standard is 13.
 N_CARDS = 13
 
-# How many suits? Standard is 4.
-SUITS = 4
+# How many suits? Standard is 4. MUST BE EVEN.
+N_SUITS = 4
 
 # Represent faces + Ace as numbers, since nothing matters
-DECK = [i for i in range(N_CARDS) for j in range(SUITS)]
+DECK = [i for i in range(N_CARDS) for j in range(N_SUITS)]
 
 
 def play_round(p1, p2, cards):
@@ -65,9 +64,11 @@ if __name__ == "__main__":
     random.shuffle(DECK)
 
     # Deal the cards.
-    p1, p2 = DECK[: N_CARDS * 2], DECK[N_CARDS * 2 :]
+    half = len(DECK) // 2
+    p1, p2 = DECK[: half], DECK[half :]
 
-    # Count the rounds, so we can show how much time is wasted.
+    # Count the rounds, so we can show how much time is wasted by this useless
+    # idiotic game.
     rounds = 0
 
     # Play for as long as both players have cards.
@@ -82,3 +83,8 @@ if __name__ == "__main__":
             break
         p1, p2 = play_round(p1, p2, cards=[])
         rounds += 1
+
+
+        if rounds > 1000:
+            print("TAKING TOO LONG, exit early.")
+            break
