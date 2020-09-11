@@ -1,4 +1,5 @@
 import random
+from datetime import datetime
 
 # How many cards per suit? Standard is 13.
 N_CARDS = 13
@@ -6,12 +7,18 @@ N_CARDS = 13
 # How many suits? Standard is 4. MUST BE EVEN.
 N_SUITS = 4
 
-# Represent faces + Ace as numbers, since nothing matters
+# Represent faces + Ace as numbers, since nothing matters.
 DECK = [i for i in range(N_CARDS) for j in range(N_SUITS)]
+
+# Storing the data.
+DATE = datetime.today().strftime("%Y-%m-%d")
+HISTORY_PATH = "data/history.csv"
+GAME_DATA_PATH = "data/past_games/" + DATE + ".csv"
+MOST_RECENT_GAME_PATH = "data/most_recent_game.csv"
+DATA = ["round,player,cards"]
 
 
 def play_round(p1, p2, cards):
-    print("")
 
     # Play the first card 
     p1_card = p1.pop(0)
@@ -19,24 +26,18 @@ def play_round(p1, p2, cards):
 
     # Someone wins the round:
     if p1_card > p2_card:
-        p1.extend(cards)
-        p1.append(p1_card)
-        p1.append(p2_card)
-        print("P1's {} beats P2's {}".format(p1_card, p2_card))
-        print("P1 has {} cards | P2 has {} cards".format(len(p1), len(p2)))
+        all_cards = cards + [p1_card, p2_card]
+        random.shuffle(all_cards)
+        p1.extend(all_cards)
         return p1, p2
     elif p2_card > p1_card:
-        p2.extend(cards)
-        p2.append(p1_card)
-        p2.append(p2_card)
-        print("P2's {} beats P1's {}".format(p2_card, p1_card))
-        print("P1 has {} cards | P2 has {} cards".format(len(p1), len(p2)))
+        all_cards = cards + [p1_card, p2_card]
+        random.shuffle(all_cards)
+        p2.extend(all_cards)
         return p1, p2
 
     # Or, we go to war:
     else:
-        print("Tie! Both played a {}".format(p1_card))
-        print("Going to war...")
         cards.append(p1_card)
         cards.append(p2_card)
         return go_to_war(p1, p2, cards)
@@ -47,15 +48,23 @@ def go_to_war(p1, p2, cards):
     # Deal three cards, but only if the players have enough.
     for i in range(3):
         if len(p1) == 0:
-            return p1, p2
+            random.shuffle(cards)
+            return p1, p2 + cards
         elif len(p2) == 0:
-            return p1, p2
+            random.shuffle(cards)
+            return p1 + cards, p2
         else:
-            print("DEAL FACEDOWN {}".format(i+1))
             cards.append(p1.pop(0))
             cards.append(p2.pop(0))
 
-    return play_round(p1, p2, cards)
+    if len(p1) == 0:
+        random.shuffle(cards)
+        return p1, p2 + cards
+    elif len(p2) == 0:
+        random.shuffle(cards)
+        return p1 + cards, p2
+    else:
+        return play_round(p1, p2, cards)
 
 
 if __name__ == "__main__":
@@ -67,24 +76,35 @@ if __name__ == "__main__":
     half = len(DECK) // 2
     p1, p2 = DECK[: half], DECK[half :]
 
-    # Count the rounds, so we can show how much time is wasted by this useless
-    # idiotic game.
-    rounds = 0
+    # Count the rounds.
+    rounds = 1
 
-    # Play for as long as both players have cards.
+    # Main game loop
     while True:
+
+        DATA.append("{},{},{}".format(rounds, "p1", len(p1)))
+        DATA.append("{},{},{}".format(rounds, "p2", len(p2)))
+
+        # Play for as long as both players have cards.
         if len(p1) == 0:
-            print("Player 2 wins!")
-            print("Game over after {} rounds".format(rounds))
+            win_text = "Player 2"
             break
-        if len(p2) == 0:
-            print("Player 1 wins!")
-            print("Game over after {} rounds".format(rounds))
+        elif len(p2) == 0:
+            win_text = "Player 1"
             break
-        p1, p2 = play_round(p1, p2, cards=[])
+        elif rounds > 1000:
+            win_text = "Infinite Game"
+            break
+
+        p1, p2, = play_round(p1, p2, cards=[])
         rounds += 1
 
+    # Save the data
+    lines = "\n".join(DATA)
+    with open(GAME_DATA_PATH, "w") as f:
+        f.write(lines)
+    with open(MOST_RECENT_GAME_PATH, "w") as f:
+        f.write(lines)
+    with open(HISTORY_PATH, "a") as f:
+        f.write("\n{},{},{}".format(DATE, win_text, rounds))
 
-        if rounds > 1000:
-            print("TAKING TOO LONG, exit early.")
-            break
