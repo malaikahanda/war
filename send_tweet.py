@@ -1,5 +1,4 @@
 import csv
-import datetime
 import tokens
 import tweepy
 
@@ -13,6 +12,10 @@ GAME_PATH = "data/most_recent_game.csv"
 IMAGE_PATHS = ["data/most_recent_line.png",
                "data/most_recent_pct.png",
                "data/most_recent_hist.png"]
+
+
+# I know that I could use pandas but I simply do not want to :)
+
 
 def parse_game():
     with open(GAME_PATH) as f:
@@ -34,8 +37,6 @@ def parse_history(winner) :
                 total_wins += 1
     return num, denom, total_wins
 
-
-# I know that I could use pandas but I simply do not want to.
 def write_tweet():
     winner, n_rounds = parse_game()
     num, denom, total_wins = parse_history(winner)
@@ -49,7 +50,7 @@ def write_tweet():
 if __name__ == "__main__":
     
     # Set up the authentication.
-    auth = tweepy.OAuthHandler(tokens.API_KEY, tokens.API_SECRET_KEY) 
+    auth = tweepy.OAuthHandler(tokens.API_KEY, tokens.API_KEY_SECRET) 
     auth.set_access_token(tokens.ACCESS_TOKEN, tokens.ACCESS_TOKEN_SECRET)
     api = tweepy.API(auth)
 

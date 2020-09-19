@@ -14,7 +14,7 @@ pct = cumsum(history$winner == "Player 1") / 1:n
 df = data.frame("player" = c(rep("Player 1", n), rep("Player 2", n)),
                 "pct" = c(pct, 1 - pct),
                 "order" = c(1:n, 1:n))
-axis_label_breaks = c(1, round(n / 2), n)
+axis_label_breaks = c(1, round((n / 2) + 0.1), n) # round() has weird behavior w 0.5
 axis_labels = format(history$date[axis_label_breaks], format = "%m/%d")
 
 # Graph.
